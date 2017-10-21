@@ -57,6 +57,11 @@ module.exports = function(RED) {
     return p;
   }
 
+  function createStream(info) {
+    var theStream = fs.createReadStream(info.path);
+    return Promise.resolve(theStream);
+  }
+
   function doSomething(msg) {
     var p = new Promise(function resolver(resolve, reject) {
       reject('nothing yet implemented');
@@ -109,6 +114,9 @@ module.exports = function(RED) {
         .then(function(info){
           fileInfo = info;
           return syncTheFile(fileInfo, msg);
+        })
+        .then(function(){
+          return createStream(fileInfo);
         })
         .then(function() {
           return doSomething();
