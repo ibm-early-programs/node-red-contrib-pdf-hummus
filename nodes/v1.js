@@ -77,7 +77,7 @@ module.exports = function(RED) {
   function createResponse(msg, pages) {
     var p = new Promise(function resolver(resolve, reject) {
       msg.payload = pages;
-      reject('nothing yet implemented');
+      resolve();
     });
     return p;
   }
