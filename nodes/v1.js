@@ -139,6 +139,11 @@ module.exports = function(RED) {
           return createStream(fileInfo);
         })
         .then(function(theStream){
+          node.status({
+            fill: 'blue',
+            shape: 'dot',
+            text: 'processing file'
+          });
           return processPDF(theStream);
         })
         .then(function(pages){
