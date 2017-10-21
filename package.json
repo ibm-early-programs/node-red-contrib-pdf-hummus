@@ -3,6 +3,7 @@
   "version": "0.0.3",
   "description": "Extract Text from a pdf using hummusjs",
   "dependencies": {
+    "hummus": "^1.0.83"
   },
   "repository": {
     "type": "git",

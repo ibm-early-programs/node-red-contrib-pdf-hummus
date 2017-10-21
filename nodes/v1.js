@@ -14,14 +14,18 @@
  * limitations under the License.
  **/
 
+
+
 module.exports = function(RED) {
   var fs = require('fs');
 
   function verifyPayload(msg) {
     if (!msg.payload) {
       return Promise.reject('Missing property: msg.payload');
+    } else if (msg.payload instanceof Buffer) {
+            return Promise.resolve();
     } else {
-      return Promise.resolve();
+      return Promise.reject('msg.payload should be pdf buffer');
     }
   }
 
