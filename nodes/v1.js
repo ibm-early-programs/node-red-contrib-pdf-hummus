@@ -14,10 +14,11 @@
  * limitations under the License.
  **/
 
-
-
 module.exports = function(RED) {
-  var fs = require('fs');
+  var fs = require('fs'),
+    temp = require('temp');
+
+  temp.track();
 
   function verifyPayload(msg) {
     if (!msg.payload) {
@@ -29,6 +30,32 @@ module.exports = function(RED) {
     }
   }
 
+  function openTheFile() {
+    var p = new Promise(function resolver(resolve, reject){
+      temp.open({
+        suffix: '.pdf'
+      }, function(err, info) {
+        if (err) {
+          reject('Error receiving the data buffer');
+        } else {
+          resolve(info);
+        }
+      });
+    });
+    return p;
+  }
+
+  function syncTheFile(info, msg) {
+    var p = new Promise(function resolver(resolve, reject){
+      fs.writeFile(info.path, msg.payload, function(err) {
+        if (err) {
+          reject('Error processing pdf buffer');
+        }
+        resolve();
+      });
+    });
+    return p;
+  }
 
   function doSomething(msg) {
     var p = new Promise(function resolver(resolve, reject) {
@@ -73,20 +100,27 @@ module.exports = function(RED) {
         text: 'loading file'
       });
 
+      var fileInfo = null;
+
       verifyPayload(msg)
+        .then(function() {
+          return openTheFile();
+        })
+        .then(function(info){
+          fileInfo = info;
+          return syncTheFile(fileInfo, msg);
+        })
         .then(function() {
           return doSomething();
         })
         .then(function() {
+          temp.cleanup();
           node.status({});
           node.send(msg);
         })
         .catch(function(err) {
+          temp.cleanup();
           reportError(node,msg,err);
-          // Note: This node.send forwards the error to the next node,
-          // if this isn't desired then this line needs to be removed.
-          // Should be ok as the node.error would already have recorded
-          // the error in the debug console.
           node.send(msg);
         });
 
