@@ -18,6 +18,10 @@ module.exports = function(RED) {
   var fs = require('fs'),
     temp = require('temp');
 
+  var hummus = require('hummus');
+  var _ = require('lodash');
+  var extractText = require('./lib/text-extraction');
+
   temp.track();
 
   function verifyPayload(msg) {
@@ -58,11 +62,27 @@ module.exports = function(RED) {
   }
 
   function createStream(info) {
-    var theStream = fs.createReadStream(info.path);
+    var theStream = hummus.createReader(info.path);
     return Promise.resolve(theStream);
   }
 
-  function doSomething(msg) {
+  function processPDF(theStream) {
+    var p = new Promise(function resolver(resolve, reject) {
+      var pagesPlacements = extractText(theStream);
+      resolve(pagesPlacements);
+    });
+    return p;
+  }
+
+  function createResponse(msg, pages) {
+    var p = new Promise(function resolver(resolve, reject) {
+      msg.payload = pages;
+      reject('nothing yet implemented');
+    });
+    return p;
+  }
+
+  function doSomething() {
     var p = new Promise(function resolver(resolve, reject) {
       reject('nothing yet implemented');
     });
@@ -118,8 +138,11 @@ module.exports = function(RED) {
         .then(function(){
           return createStream(fileInfo);
         })
-        .then(function() {
-          return doSomething();
+        .then(function(theStream){
+          return processPDF(theStream);
+        })
+        .then(function(pages){
+          return createResponse(msg, pages);
         })
         .then(function() {
           temp.cleanup();

@@ -4,7 +4,8 @@
   "description": "Extract Text from a pdf using hummusjs",
   "dependencies": {
     "temp": "^0.8.3",
-    "hummus": "^1.0.83"
+    "hummus": "^1.0.77",
+    "lodash": "^4.17.4"
   },
   "repository": {
     "type": "git",
