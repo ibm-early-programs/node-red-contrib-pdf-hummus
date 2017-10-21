@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-pdf-hummus",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Extract Text from a pdf using hummusjs",
   "dependencies": {
     "temp": "^0.8.3",

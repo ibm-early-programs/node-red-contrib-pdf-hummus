@@ -69,7 +69,6 @@ module.exports = function(RED) {
   function processPDF(theStream) {
     var p = new Promise(function resolver(resolve, reject) {
       var pagesPlacements = extractText(theStream);
-      //console.log('Extracted Data looks like:', pagesPlacements);
       resolve(pagesPlacements);
     });
     return p;
@@ -77,19 +76,14 @@ module.exports = function(RED) {
 
   function createResponse(pages) {
     var p = new Promise(function resolver(resolve, reject) {
-      //msg.payload = 'hang in there - 001';
       var textPages = [];
       var pageText = '';
-      //console.log('Number of pages found:', pages.length);
-      //console.log(pages[0][0].text);
+
       for (var i=0;i < pages.length; ++i) {
         pageText = '';
-        //console.log(pages[i]);
         pages[i].forEach(function(element) {
           pageText += element.text;
-          //console.log(element);
         });
-        //console.log(pageText)
         textPages.push(pageText);
       }
       resolve(textPages);
@@ -101,14 +95,9 @@ module.exports = function(RED) {
     var p = new Promise(function resolver(resolve, reject) {
       msg.payload = 'hang in there - 001';
 
-      //console.log('Number of payloads to send:', textPages.length);
-      //console.log(pages[0][0].text);
-
       textPages.forEach(function(element) {
-        //console.log(element);
         msg.payload = element;
         node.send(msg);
-        //console.log(element);
       });
 
       resolve();
@@ -163,16 +152,13 @@ module.exports = function(RED) {
 
       verifyPayload(msg)
         .then(function() {
-          console.log('Opening the file');
           return openTheFile();
         })
         .then(function(info){
           fileInfo = info;
-          console.log('Synching the file');
           return syncTheFile(fileInfo, msg);
         })
         .then(function(){
-          console.log('Creating the stream');
           return createStream(fileInfo);
         })
         .then(function(theStream){
@@ -181,25 +167,20 @@ module.exports = function(RED) {
             shape: 'dot',
             text: 'processing file'
           });
-          console.log('Processin the file');
           return processPDF(theStream);
         })
         .then(function(pages){
-          console.log('creating the response');
           return createResponse(pages);
         })
         .then(function(textPages){
-          console.log('creating the response');
           return sendPayloads(node, msg, textPages);
         })
         .then(function() {
-          console.log('done');
           temp.cleanup();
           node.status({});
           //node.send(msg);
         })
         .catch(function(err) {
-          console.log('error');
           temp.cleanup();
           reportError(node,msg,err);
           node.send(msg);
