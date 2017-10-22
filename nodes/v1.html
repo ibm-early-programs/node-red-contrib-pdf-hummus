@@ -21,19 +21,31 @@
   </div>
 
   <div class="form-row">
-
+      <label for="node-input-filename"><i class="fa fa-file"></i> Filename</label>
+      <input type="text" id="node-input-filename" placeholder="">
+  </div>
+  <div class="form-row">
+      <label>&nbsp;</label>
+      <input type="checkbox" id="node-input-split"style="display: inline-block; width: auto; vertical-align: top;"></input>
+      <label for="node-input-split" style="width: 70%;">
+          <i class="fa fa-code-fork"></i> Split into pages</label>
   </div>
 
 </script>
 
 <script type="text/x-red" data-help-name="pdf-hummus">
-  <p>Documentation will be here.
-  </p>
-
+  <p>This node splits text out of a PDF document making use of the
+  npm module hummusjs and the text extraction sample. </p>
   <p><b>Usage</b></p>
-  <p>This node should be provided in input : </p>
-  <p>On successful conversion this node will output : </p>
-
+  <p>The node needs a filename and a PDF input buffer as input.
+  </p>
+  <p>The output is a json object on <code>msg.payload</code></p>
+  <p>If the split option is selected then an event is sent for each page.</p>
+  <p>The filename being written to can be overridden by setting
+  <code>msg.filename</code></p>
+  <p>The document to be added should be passed in as a data buffer
+  in <code>msg.payload</code>
+  </p>
 </script>
 
 <style type="text/css">
@@ -52,6 +64,8 @@
       category: 'function',
       defaults: {
         name: { value: '' },
+        filename: {value: ''},
+        split : {value: true},
         mode: { value: {value:'asBuffer'} }
       },
       credentials: {
