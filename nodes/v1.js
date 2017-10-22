@@ -34,6 +34,25 @@ module.exports = function(RED) {
     }
   }
 
+  function determineOptions(msg, config) {
+    var p = new Promise(function resolver(resolve, reject) {
+      var options = {};
+
+      if (msg.filename) {
+        options.filename = msg.filename;
+      } else if (config.filename) {
+        options.filename = config.filename;
+      } else {
+        options.filename = 'unknown';
+      }
+
+      options.split = config.split ? config.split : false;
+
+      resolve(options);
+    });
+    return p;
+  }
+
   function openTheFile() {
     var p = new Promise(function resolver(resolve, reject){
       temp.open({
@@ -74,17 +93,25 @@ module.exports = function(RED) {
     return p;
   }
 
-  function createResponse(pages) {
+  function createResponse(pages, options) {
     var p = new Promise(function resolver(resolve, reject) {
-      var textPages = [];
-      var pageText = '';
+      var textPages = [],
+        page = {},
+        pageText = '',
+        totalLength = pages.length;
 
-      for (var i=0;i < pages.length; ++i) {
+      for (var i=0;i < totalLength; ++i) {
         pageText = '';
+        page = {
+          'filename' : options.filename,
+          'pageNumber' : i + 1,
+          'totalPages' : totalLength
+        };
         pages[i].forEach(function(element) {
           pageText += element.text;
         });
-        textPages.push(pageText);
+        page.text = pageText;
+        textPages.push(page);
       }
       resolve(textPages);
     });
@@ -141,6 +168,7 @@ module.exports = function(RED) {
     RED.nodes.createNode(this, config);
 
     this.on('input', function(msg) {
+      var options = {};
       //var message = '';
       node.status({
         fill: 'blue',
@@ -152,6 +180,10 @@ module.exports = function(RED) {
 
       verifyPayload(msg)
         .then(function() {
+          return determineOptions(msg, config);
+        })
+        .then(function(o) {
+          options = o;
           return openTheFile();
         })
         .then(function(info){
@@ -170,7 +202,7 @@ module.exports = function(RED) {
           return processPDF(theStream);
         })
         .then(function(pages){
-          return createResponse(pages);
+          return createResponse(pages, options);
         })
         .then(function(textPages){
           return sendPayloads(node, msg, textPages);
