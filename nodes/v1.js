@@ -95,7 +95,7 @@ module.exports = function(RED) {
 
   function createResponse(pages, options) {
     var p = new Promise(function resolver(resolve, reject) {
-      var textPages = [],
+      var textPages = {'pages' : []},
         page = {},
         pageText = '',
         totalLength = pages.length;
@@ -111,22 +111,24 @@ module.exports = function(RED) {
           pageText += element.text;
         });
         page.text = pageText;
-        textPages.push(page);
+        textPages.pages.push(page);
       }
       resolve(textPages);
     });
     return p;
   }
 
-  function sendPayloads(node, msg, textPages) {
+  function sendPayloads(node, msg, textPages, options) {
     var p = new Promise(function resolver(resolve, reject) {
-      msg.payload = 'hang in there - 001';
-
-      textPages.forEach(function(element) {
-        msg.payload = element;
+      if (options.split) {
+        textPages.pages.forEach(function(element) {
+          msg.payload = element;
+          node.send(msg);
+        });
+      } else {
+        msg.payload = textPages;
         node.send(msg);
-      });
-
+      }
       resolve();
     });
     return p;
@@ -205,7 +207,7 @@ module.exports = function(RED) {
           return createResponse(pages, options);
         })
         .then(function(textPages){
-          return sendPayloads(node, msg, textPages);
+          return sendPayloads(node, msg, textPages, options);
         })
         .then(function() {
           temp.cleanup();
