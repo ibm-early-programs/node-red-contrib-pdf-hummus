@@ -25,16 +25,23 @@ module.exports = function(RED) {
   temp.track();
 
   function verifyPayload(msg) {
-    // If the node is in a flow driven by a HTTP POST, use the relevant fields for the payload and filename.
+    var httpPostData = {}
+    // If the node is in a flow driven by a HTTP POST, store the relevant fields for the buffer and filename.
+    // This will give priority to the buffer being passed through the msg.payload, allowing for the event of
+    // the file being sent via HTTP POST and then being updated prior to this node. 
     if(!!msg.req && !!msg.req.files && msg.req.files.length > 0 && !!msg.req.files[0].buffer && msg.req.files[0].mimetype === "application/pdf" && msg.req.files[0].buffer instanceof Buffer){
-        msg.payload = msg.req.files[0].buffer;
-        msg.filename = msg.req.files[0].originalname;
+      httpPostData.buffer = msg.req.files[0].buffer;
+      httpPostData.filename = msg.req.files[0].originalname;
     }
       
-    if (!msg.payload) {
+    if (!msg.payload && !httpPostData.buffer) {
       return Promise.reject('Missing property: msg.payload');
     } else if (msg.payload instanceof Buffer) {
-            return Promise.resolve();
+      return Promise.resolve();
+    } else if (!!httpPostData.buffer) {
+      msg.payload = httpPostData.buffer;
+      msg.filename = httpPostData.filename;
+      return Promise.resolve();
     } else {
       return Promise.reject('msg.payload should be pdf buffer');
     }
