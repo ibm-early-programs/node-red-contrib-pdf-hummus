@@ -25,6 +25,12 @@ module.exports = function(RED) {
   temp.track();
 
   function verifyPayload(msg) {
+    // If the node is in a flow driven by a HTTP POST, use the relevant fields for the payload and filename.
+    if(!!msg.req && !!msg.req.files && msg.req.files.length > 0 && !!msg.req.files[0].buffer && msg.req.files[0].mimetype === "application/pdf" && msg.req.files[0].buffer instanceof Buffer){
+        msg.payload = msg.req.files[0].buffer;
+        msg.filename = msg.req.files[0].originalname;
+    }
+      
     if (!msg.payload) {
       return Promise.reject('Missing property: msg.payload');
     } else if (msg.payload instanceof Buffer) {
