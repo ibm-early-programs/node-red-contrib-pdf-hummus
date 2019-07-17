@@ -26,7 +26,7 @@ function besToUnicodes(inArray) {
         }
         i+=2;
     }
-    
+
     return unicodes;
 }
 
@@ -63,16 +63,20 @@ function parseToUnicode(pdfReader,toUnicodeObjectId) {
             }
         }
         else if(operatorName === 'endbfrange') {
-            
+
             // Operators are 3. two codesBytes and then either a unicode start range or array of unicodes
             for(var i=0;i<operands.length;i+=3) {
                 var startCode = beToNum(operands[i].toBytesArray());
                 var endCode = beToNum(operands[i+1].toBytesArray());
-                
+
                 if(operands[i+2].getType() === hummus.ePDFObjectArray) {
                     var unicodeArray = operands[i+2].toPDFArray();
                     // specific codes
-                    for(var j = startCode;j<=endCode;++j) {
+                    // *** Change for node-red node ***
+                    // occasionally endcode was going out of limits.
+                    // this might also be required in the else clause,
+                    // but for now ...
+                    for(var j = startCode;j<endCode;++j) {
                         map[j] = besToUnicodes(unicodeArray.queryObject(j).toBytesArray());
                     }
                 }
@@ -86,7 +90,7 @@ function parseToUnicode(pdfReader,toUnicodeObjectId) {
                     }
                 }
 
-            }            
+            }
         }
     });
 
@@ -107,7 +111,7 @@ function getStandardEncodingMap(encodingName) {
     if(encodingName === 'MacRomanEncoding')
         return MacRomanEncoding;
 
-    return null; 
+    return null;
 }
 
 function setupDifferencesEncodingMap(pdfReader,font, encodingDict) {
@@ -147,7 +151,7 @@ function setupDifferencesEncodingMap(pdfReader,font, encodingDict) {
         var i=0;
         while(i<differences.length) {
             // first item is always a number
-            var firstIndex = differences[i].value;            
+            var firstIndex = differences[i].value;
             ++i;
             // now come names, one for each index
             while(i<differences.length && differences[i].getType() === hummus.ePDFObjectName) {
@@ -200,7 +204,7 @@ function parseSimpleFontDimensions(self,pdfReader,font) {
             }
         }
     }
-    
+
 
     if(!font.exists('FontDescriptor'))
         return;
@@ -355,7 +359,7 @@ FontDecoding.prototype.iterateTextDisplacements = function(encodedBytes,iterator
                 i+=1;
             }
             iterator(((this.widths && this.widths[code]) || this.defaultWidth || 0) / 1000,code);
-        }        
+        }
     }
     else {
         // default to 2 bytes. though i shuld be reading the cmap. and so also get the writing mode
