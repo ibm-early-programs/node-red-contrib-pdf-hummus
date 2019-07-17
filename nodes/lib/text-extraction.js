@@ -41,7 +41,7 @@ function readResources(resourcesDicts,pdfReader,result) {
                 }
             });
         }
-    } 
+    }
 
     if(resourcesDicts.exists('Font')) {
         var fontsEntry = resourcesDicts.queryDictionaryObject('Font',pdfReader);
@@ -59,7 +59,7 @@ function readResources(resourcesDicts,pdfReader,result) {
                 fonts[fontName] = font;
             });
         }
-    }    
+    }
 
     result.extGStates = extGStates;
     result.fonts = fonts;
@@ -183,12 +183,12 @@ function collectPlacements(resources,placements,formsUsed) {
                 var param = operands.pop();
                 TL(param.value,state);
                 break;
-            }     
+            }
             case 'Ts': {
                 var param = operands.pop();
                 state.currentTextState().rise = param.value;
                 break;
-            }     
+            }
             case 'Tf': {
                 var size = operands.pop();
                 var fontName = operands.pop();
@@ -199,7 +199,7 @@ function collectPlacements(resources,placements,formsUsed) {
                     }
                 }
                 break;
-            }   
+            }
 
             // Text elements operators
             case 'BT': {
@@ -258,7 +258,7 @@ function collectPlacements(resources,placements,formsUsed) {
             case 'TJ': {
                 var params = operands.pop().toPDFArray().toJSArray();
                 textPlacement(_.map(params,(item)=>{
-                    if(item.getType() === hummus.ePDFObjectLiteralString || item.getType() === hummus.ePDFObjectHexString) 
+                    if(item.getType() === hummus.ePDFObjectLiteralString || item.getType() === hummus.ePDFObjectHexString)
                         return {asEncodedText:item.value,asBytes:item.toBytesArray()};
                     else
                         return item.value;
@@ -273,7 +273,7 @@ function fetchFontDecoder(item,pdfReader,state) {
     var fontDescriptor = item.textState.font.reference;
     var fontReference = item.textState.font.reference.embeddedObjectId || item.textState.font.reference.objectId;
     if(!state.fontDecoders[fontReference]) {
-        var fontObject = item.textState.font.reference.objectId ? 
+        var fontObject = item.textState.font.reference.objectId ?
                 pdfReader.parseNewObject(item.textState.font.reference.objectId).toPDFDictionary() :
                 item.textState.font.reference.embeddedObject;
 
@@ -296,7 +296,7 @@ function translatePlacements(state,pdfReader,placements) {
             placement.text.forEach((item,indexItem)=> {
                 if(_.isArray(item.text)) {
                     // TJ case
-                    
+
                     // translated parts
                     item.text.forEach((textItem)=> {
                         if(textItem.asBytes) {
@@ -350,7 +350,7 @@ function computePlacementsDimensions(state, pdfReader, placements) {
     // iterate the placements computing bounding boxes
     placements.forEach((placement)=> {
         if(placement.type === 'text') {
-            // this is a BT..ET sequance 
+            // this is a BT..ET sequance
             var nextPlacementDefaultTm = null;
             placement.text.forEach((item)=> {
                 // if matrix is not dirty (no matrix changing operators were running betwee items), replace with computed matrix of the previous round.
@@ -491,7 +491,7 @@ function flattenPlacements(pagesPlacements) {
  *      matrix: 6 numbers pdf matrix describing how the text is transformed in relation to the page (this includes position - translation)
  *      localBBox: 4 numbers box describing the text bounding box, before being transformed by matrix.
  *      globalBBox: 4 numbers box describing the text bounding box after transoformation, making it the bbox in relation to the page.
- *      
+ *
  * }
  */
 function extractText(pdfReader) {
